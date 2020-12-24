@@ -1,57 +1,43 @@
-﻿
-using System;
+﻿using Nop.Plugin.Widgets.BsLiveChat.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
-using Nop.Core.Domain.Orders;
-using Nop.Plugin.Widgets.BsLiveChat.Models;
-using Nop.Services.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
-using Nop.Services.Logging;
 using Nop.Services.Messages;
-using Nop.Services.Orders;
-using Nop.Services.Stores;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Mvc.Filters;
+ 
 
 namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
 {
     [Area(AreaNames.Admin)]
     public class WidgetsBsLiveChatController : BasePluginController
     {
-        private readonly IWorkContext _workContext;
+         
         private readonly IStoreContext _storeContext;
-        private readonly IStoreService _storeService;
+ 
         private readonly ISettingService _settingService;
-        private readonly IOrderService _orderService;
-        private readonly ILogger _logger;
-        private readonly ICategoryService _categoryService;
-        private readonly IProductAttributeParser _productAttributeParser;
+      
+      
+     
         private readonly ILocalizationService _localizationService;
         private readonly INotificationService _notificationService;
 
-        public WidgetsBsLiveChatController(IWorkContext workContext,
-            IStoreContext storeContext, 
-            IStoreService storeService,
-            ISettingService settingService, 
-            IOrderService orderService, 
-            ILogger logger, 
-            ICategoryService categoryService,
-            IProductAttributeParser productAttributeParser,
-            ILocalizationService localizationService,INotificationService notificationService)
+        public WidgetsBsLiveChatController( 
+            IStoreContext storeContext,         
+            ISettingService settingService,         
+           
+          
+            ILocalizationService localizationService,
+            INotificationService notificationService)
         {
-            this._workContext = workContext;
-            this._storeContext = storeContext;
-            this._storeService = storeService;
-            this._settingService = settingService;
-            this._orderService = orderService;
-            this._logger = logger;
-            this._categoryService = categoryService;
-            this._productAttributeParser = productAttributeParser;
+            
+            this._storeContext = storeContext;             
+                        
             this._localizationService = localizationService;
-            _notificationService = notificationService;
+            this._notificationService = notificationService;
+            this._settingService = settingService;
         }
 
         [AuthorizeAdmin]

@@ -1,5 +1,7 @@
 ﻿using System;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Services.Configuration;
@@ -47,6 +49,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Components
             {
                 _logger.InsertLog(Core.Domain.Logging.LogLevel.Error, "Error creating scripts for  Live Chat", ex.ToString());
             }
+            return new HtmlContentViewComponentResult(new HtmlString(globalScript ?? string.Empty));
             return View("~/Plugins/Widgets.BsLiveChat/Views/WidgetsBsLiveChat/PublicInfo.cshtml", globalScript);
         }
 
