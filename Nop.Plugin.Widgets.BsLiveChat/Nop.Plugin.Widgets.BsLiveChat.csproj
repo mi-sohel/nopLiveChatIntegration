@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework> 
+    <TargetFramework>net5.0</TargetFramework> 
     <OutputPath>..\..\Presentation\Nop.Web\Plugins\Widgets.BsLiveChat</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
 	<!--Set this parameter to true to get the dlls copied from the NuGet cache to the output of your project.

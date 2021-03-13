@@ -3,8 +3,8 @@
   "FriendlyName": "Live Chat",
   "SystemName": "Widgets.BsLiveChat",
   "Version": "1.83",
-  "SupportedVersions": [ "4.30" ],
-  "Author": "Sohel, nop MVP, nopStation",
+  "SupportedVersions": [ "4.40" ],
+  "Author": "Sohel, nop MVP, misohel@hotmail.com",
   "DisplayOrder": 1,
   "FileName": "Nop.Plugin.Widgets.BsLiveChat.dll",
   "Description": "Chat with your visitors in Real Time."

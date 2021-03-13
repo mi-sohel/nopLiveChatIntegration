@@ -7,11 +7,14 @@ using Nop.Services.Messages;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Mvc.Filters;
- 
+using System.Threading.Tasks;
+using Nop.Services.Security;
 
 namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
 {
     [Area(AreaNames.Admin)]
+    [AuthorizeAdmin]
+    [AutoValidateAntiforgeryToken]
     public class WidgetsBsLiveChatController : BasePluginController
     {
          
@@ -23,6 +26,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
      
         private readonly ILocalizationService _localizationService;
         private readonly INotificationService _notificationService;
+        private readonly IPermissionService _permissionService;
 
         public WidgetsBsLiveChatController( 
             IStoreContext storeContext,         
@@ -30,7 +34,8 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
            
           
             ILocalizationService localizationService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IPermissionService permissionService)
         {
             
             this._storeContext = storeContext;             
@@ -38,14 +43,17 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
             this._localizationService = localizationService;
             this._notificationService = notificationService;
             this._settingService = settingService;
+            _permissionService = permissionService;
         }
 
-        [AuthorizeAdmin]
-        public IActionResult Configure()
+       
+        public async Task<IActionResult> Configure()
         {
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageWidgets))
+                return AccessDeniedView();
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var liveChatSettings = _settingService.LoadSetting<BsLiveChatSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var liveChatSettings = await _settingService.LoadSettingAsync<BsLiveChatSettings>(storeScope);
             var model = new ConfigurationModel
             {
                 TrackingScript = liveChatSettings.TrackingScript,
@@ -55,7 +63,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
             if (storeScope > 0)
             {
               
-                model.TrackingScript_OverrideForStore = _settingService.SettingExists(liveChatSettings,
+                model.TrackingScript_OverrideForStore = await _settingService.SettingExistsAsync(liveChatSettings,
                     x => x.TrackingScript, storeScope);
             }
             return View("~/Plugins/Widgets.BsLiveChat/Views/WidgetsBsLiveChat/Configure.cshtml", model);
@@ -63,11 +71,16 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
 
         [HttpPost]
         [AuthorizeAdmin]
-        public IActionResult Configure(ConfigurationModel model)
+        public async Task<IActionResult> Configure(ConfigurationModel model)
         {
+
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageWidgets))
+                return AccessDeniedView();
+
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var liveChatSettings = _settingService.LoadSetting<BsLiveChatSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var liveChatSettings = await _settingService.LoadSettingAsync<BsLiveChatSettings>(storeScope);
+
             liveChatSettings.TrackingScript = model.TrackingScript;
             
             /* We do not clear cache after each setting update.
@@ -75,18 +88,15 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
              * and loaded from database after each update */
            
             
-            if (model.TrackingScript_OverrideForStore || storeScope == 0)
-                _settingService.SaveSetting(liveChatSettings, x => x.TrackingScript, storeScope, false);
-            else if (storeScope > 0)
-                _settingService.DeleteSetting(liveChatSettings, x => x.TrackingScript, storeScope);
-            
-                
+ 
+            await _settingService.SaveSettingOverridablePerStoreAsync(liveChatSettings, x => x.TrackingScript,model.TrackingScript_OverrideForStore, storeScope, false);
+                 
             //now clear settings cache
-            _settingService.ClearCache();
+          await  _settingService.ClearCacheAsync();
 
-           _notificationService.SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
+           _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
 
-            return Configure();
+            return await Configure();
         }
 
 

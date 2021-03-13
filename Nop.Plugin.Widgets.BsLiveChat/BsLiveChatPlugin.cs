@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Seo;
@@ -34,18 +35,17 @@ namespace Nop.Plugin.Widgets.BsLiveChat
             _storeContext = storeContext;
             _seoSettings = seoSettings;
         }
-        public bool HideInWidgetList => false;
+       
         /// <summary>
         /// Gets widget zones where this widget should be rendered
         /// </summary>
         /// <returns>Widget zones</returns>
-        public IList<string> GetWidgetZones()
+        /// 
+        public Task<IList<string>> GetWidgetZonesAsync()
         {
-            return new List<string>
-            {
-               PublicWidgetZones.BodyEndHtmlTagBefore
-            };
+            return Task.FromResult<IList<string>>(new List<string> { PublicWidgetZones.BodyEndHtmlTagBefore });
         }
+         
 
         /// <summary>
         /// Gets a configuration page URL
@@ -68,66 +68,44 @@ namespace Nop.Plugin.Widgets.BsLiveChat
         /// <summary>
         /// Install plugin
         /// </summary>
-        public override void Install()
+        public override async Task InstallAsync()
         {
             // Adding Meta Tags.
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var seoSettings = _settingService.LoadSetting<SeoSettings>(storeScope);
-            var customHeadTags = seoSettings.CustomHeadTags;
+         
+            var customHeadTags = _seoSettings.CustomHeadTags;
             var finalCustomHeadTags = customHeadTags + "<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">";
-            seoSettings.CustomHeadTags = finalCustomHeadTags;
-            _settingService.SaveSettingOverridablePerStore(seoSettings, x => x.CustomHeadTags, true, storeScope, false);
-            _settingService.ClearCache();
+            _seoSettings.CustomHeadTags = finalCustomHeadTags;
+            await _settingService.SaveSettingAsync(_seoSettings, x => x.CustomHeadTags);
+            await _settingService.ClearCacheAsync();
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Widgets.BsLiveChat.TrackingScript", " Live Chat Script code from chat provider: ");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Widgets.BsLiveChat.TrackingScript.Hint", "Paste the tracking code generated from chat provider");
+           
+            await _localizationService.AddLocaleResourceAsync(new Dictionary<string, string>
+            {
+                ["Plugins.Widgets.BsLiveChat.TrackingScript"] = "Live Chat Script code from chat provider:",
+                ["Plugins.Widgets.BsLiveChat.TrackingScript.Hint"] = "Paste the tracking code generated from chat provider"
+            });
 
-            base.Install();
+
+            await base.InstallAsync();
         }
 
         /// <summary>
         /// Uninstall plugin
         /// </summary>
-        public override void Uninstall()
+        public override async Task UninstallAsync()
         {
             // Deleting Meta Tags
 
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var seoSettings = _settingService.LoadSetting<SeoSettings>(storeScope);
-            var customHeadTags = seoSettings.CustomHeadTags;
-            var deleteMetaTag = "<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">";
-            int start = customHeadTags.IndexOf(deleteMetaTag);
-            int lastIndex = start + deleteMetaTag.Length;
-            var firstSubstring = "";
-            var lastSubstring = "";
-            int length = customHeadTags.Length;
-            if(start != -1)
-            {
-                if (start != 0)
-                    firstSubstring = customHeadTags.Substring(0, start);
-                if (lastIndex != customHeadTags.Length)
-                    lastSubstring = customHeadTags.Substring(lastIndex, (length - lastIndex));
-
-                var finalCustomHeadTags = firstSubstring + lastSubstring;
-                seoSettings.CustomHeadTags = finalCustomHeadTags;
-
-                _settingService.SaveSettingOverridablePerStore(seoSettings, x => x.CustomHeadTags, true, storeScope, false);
-                _settingService.ClearCache();
-            }
             
-
             //settings
-            _settingService.DeleteSetting<BsLiveChatSettings>();
+           await _settingService.DeleteSettingAsync<BsLiveChatSettings>();
 
             //locales
-            
-           _localizationService.DeletePluginLocaleResource("Plugins.Widgets.BsLiveChat.TrackingScript");
-           _localizationService.DeletePluginLocaleResource("Plugins.Widgets.BsLiveChat.TrackingScript.Hint");
-            
 
-            base.Uninstall();
+            await _localizationService.DeleteLocaleResourcesAsync("Plugins.Widgets.BsLiveChat");
+            await base.UninstallAsync();
         }
 
-       
+        public bool HideInWidgetList => false;
     }
 }

@@ -4,12 +4,10 @@ using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Plugin.Widgets.BsLiveChat.Models
 {
-    public class ConfigurationModel : BaseNopModel
+    public record ConfigurationModel : BaseNopModel
     {
         public int ActiveStoreScopeConfiguration { get; set; }
-        
-        
-        public bool GoogleId_OverrideForStore { get; set; }
+       
 
         [NopResourceDisplayName("Plugins.Widgets.BsLiveChat.TrackingScript")]
       

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -16,51 +17,31 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Components
     {
         private readonly IStoreContext _storeContext;
         private readonly IStaticCacheManager _cacheManager;
-        private readonly ISettingService _settingService;
+        private readonly BsLiveChatSettings _bsLivesetting;
         private readonly IPictureService _pictureService;
         private readonly ILogger _logger;
 
         public WidgetsBsLiveChatViewComponent(IStoreContext storeContext, 
-            IStaticCacheManager cacheManager, 
-            ISettingService settingService, 
+            IStaticCacheManager cacheManager,
+            BsLiveChatSettings bsLivesetting, 
             IPictureService pictureService, ILogger logger)
         {
             this._storeContext = storeContext;
             this._cacheManager = cacheManager;
-            this._settingService = settingService;
+            this._bsLivesetting = bsLivesetting;
             this._pictureService = pictureService;
             _logger = logger;
         }
 
-        public IViewComponentResult Invoke(string widgetZone, object additionalData)
+        public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
         {
-            string globalScript = "";
-
-            try
-            {
-
-
-
-
-                globalScript += GetTrackingScript();
-
-            }
-            catch (Exception ex)
-            {
-                _logger.InsertLog(Core.Domain.Logging.LogLevel.Error, "Error creating scripts for  Live Chat", ex.ToString());
-            }
-            return new HtmlContentViewComponentResult(new HtmlString(globalScript ?? string.Empty));
-            return View("~/Plugins/Widgets.BsLiveChat/Views/WidgetsBsLiveChat/PublicInfo.cshtml", globalScript);
+             
+           // return   new HtmlContentViewComponentResult(new HtmlString(_bsLivesetting.TrackingScript ?? string.Empty));
+            return View("~/Plugins/Widgets.BsLiveChat/Views/WidgetsBsLiveChat/PublicInfo.cshtml", _bsLivesetting.TrackingScript);
         }
 
         
 
-        private string GetTrackingScript()
-        {
-            var liveChatSettings = _settingService.LoadSetting<BsLiveChatSettings>(_storeContext.CurrentStore.Id);
-            var analyticsTrackingScript = liveChatSettings.TrackingScript + "\n";
-
-            return analyticsTrackingScript;
-        }
+        
     }
 }
