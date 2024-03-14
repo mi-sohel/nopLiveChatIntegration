@@ -1,0 +1,11 @@
+﻿{
+  "Group": "Widgets",
+  "FriendlyName": "Live Chat",
+  "SystemName": "Widgets.BsLiveChat",
+  "Version": "4.6.0",
+  "SupportedVersions": [ "4.60" ],
+  "Author": "Sohel, nop MVP, misohel@hotmail.com",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Widgets.BsLiveChat.dll",
+  "Description": "Chat with your visitors in Real Time."
+}
