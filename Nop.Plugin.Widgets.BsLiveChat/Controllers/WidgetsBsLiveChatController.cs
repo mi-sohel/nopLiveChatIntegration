@@ -1,0 +1,82 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
+using Nop.Plugin.Widgets.BsLiveChat.Models;
+using Nop.Services.Configuration;
+using Nop.Services.Localization;
+using Nop.Services.Messages;
+using Nop.Services.Security;
+using Nop.Web.Framework;
+using Nop.Web.Framework.Controllers;
+using Nop.Web.Framework.Mvc.Filters;
+
+namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
+{
+    [Area(AreaNames.ADMIN)]
+    [AuthorizeAdmin]
+    [AutoValidateAntiforgeryToken]
+    public class WidgetsBsLiveChatController : BasePluginController
+    {
+        private readonly IStoreContext _storeContext;
+        private readonly ISettingService _settingService;
+        private readonly ILocalizationService _localizationService;
+        private readonly INotificationService _notificationService;
+        private readonly IPermissionService _permissionService;
+
+        public WidgetsBsLiveChatController(IStoreContext storeContext,
+            ISettingService settingService,
+            ILocalizationService localizationService,
+            INotificationService notificationService,
+            IPermissionService permissionService)
+        {
+            _storeContext = storeContext;
+            _localizationService = localizationService;
+            _notificationService = notificationService;
+            _settingService = settingService;
+            _permissionService = permissionService;
+        }
+
+        public async Task<IActionResult> Configure()
+        {
+            if (!await _permissionService.AuthorizeAsync(StandardPermission.Configuration.MANAGE_WIDGETS))
+                return AccessDeniedView();
+
+            //load settings for a chosen store scope
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var liveChatSettings = await _settingService.LoadSettingAsync<BsLiveChatSettings>(storeScope);
+            var model = new ConfigurationModel
+            {
+                TrackingScript = liveChatSettings.TrackingScript,
+                ActiveStoreScopeConfiguration = storeScope
+            };
+
+            if (storeScope > 0)
+            {
+                model.TrackingScript_OverrideForStore = await _settingService.SettingExistsAsync(liveChatSettings,
+                    x => x.TrackingScript, storeScope);
+            }
+            return View("~/Plugins/Widgets.BsLiveChat/Views/WidgetsBsLiveChat/Configure.cshtml", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Configure(ConfigurationModel model)
+        {
+            if (!await _permissionService.AuthorizeAsync(StandardPermission.Configuration.MANAGE_WIDGETS))
+                return AccessDeniedView();
+
+            //load settings for a chosen store scope
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var liveChatSettings = await _settingService.LoadSettingAsync<BsLiveChatSettings>(storeScope);
+
+            liveChatSettings.TrackingScript = model.TrackingScript;
+
+            await _settingService.SaveSettingOverridablePerStoreAsync(liveChatSettings, x => x.TrackingScript, model.TrackingScript_OverrideForStore, storeScope, false);
+
+            //now clear settings cache
+            await _settingService.ClearCacheAsync();
+
+            _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
+
+            return await Configure();
+        }
+    }
+}
