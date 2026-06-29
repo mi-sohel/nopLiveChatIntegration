@@ -28,10 +28,11 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
             INotificationService notificationService,
             IPermissionService permissionService)
         {
-            _storeContext = storeContext;
-            _localizationService = localizationService;
-            _notificationService = notificationService;
-            _settingService = settingService;
+            this._storeContext = storeContext;
+
+            this._localizationService = localizationService;
+            this._notificationService = notificationService;
+            this._settingService = settingService;
             _permissionService = permissionService;
         }
 
@@ -68,6 +69,10 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Controllers
             var liveChatSettings = await _settingService.LoadSettingAsync<BsLiveChatSettings>(storeScope);
 
             liveChatSettings.TrackingScript = model.TrackingScript;
+
+            /* We do not clear cache after each setting update.
+             * This behavior can increase performance because cached settings will not be cleared 
+             * and loaded from database after each update */
 
             await _settingService.SaveSettingOverridablePerStoreAsync(liveChatSettings, x => x.TrackingScript, model.TrackingScript_OverrideForStore, storeScope, false);
 

@@ -7,8 +7,8 @@ namespace Nop.Plugin.Widgets.BsLiveChat.Models
     {
         public int ActiveStoreScopeConfiguration { get; set; }
 
-        [NopResourceDisplayName("Plugins.Widgets.BsLiveChat.TrackingScript")]
         //tracking code
+        [NopResourceDisplayName("Plugins.Widgets.BsLiveChat.TrackingScript")]
         public string TrackingScript { get; set; }
         public bool TrackingScript_OverrideForStore { get; set; }
     }

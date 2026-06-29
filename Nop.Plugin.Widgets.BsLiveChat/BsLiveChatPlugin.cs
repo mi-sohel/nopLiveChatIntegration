@@ -19,6 +19,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat
         public BsLiveChatPlugin(ISettingService settingService,
             IWebHelper webHelper,
             ILocalizationService localizationService,
+            IStoreContext storeContext,
             SeoSettings seoSettings)
         {
             _settingService = settingService;
@@ -27,24 +28,35 @@ namespace Nop.Plugin.Widgets.BsLiveChat
             _seoSettings = seoSettings;
         }
 
+        /// <summary>
+        /// Gets widget zones where this widget should be rendered
+        /// </summary>
+        /// <returns>Widget zones</returns>
+        /// 
         public Task<IList<string>> GetWidgetZonesAsync()
         {
             return Task.FromResult<IList<string>>(new List<string> { PublicWidgetZones.BodyEndHtmlTagBefore });
         }
 
+        /// <summary>
+        /// Gets a configuration page URL
+        /// </summary>
         public override string GetConfigurationPageUrl()
         {
             return _webHelper.GetStoreLocation() + "Admin/WidgetsBsLiveChat/Configure";
         }
 
+        /// <summary>
+        /// Install plugin
+        /// </summary>
         public override async Task InstallAsync()
         {
             // Adding Meta Tags.
-
             var customHeadTags = _seoSettings.CustomHeadTags;
             var finalCustomHeadTags = customHeadTags + "<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">";
             _seoSettings.CustomHeadTags = finalCustomHeadTags;
             await _settingService.SaveSettingAsync(_seoSettings, x => x.CustomHeadTags);
+
             await _settingService.ClearCacheAsync();
 
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
@@ -52,16 +64,21 @@ namespace Nop.Plugin.Widgets.BsLiveChat
                 ["Plugins.Widgets.BsLiveChat.TrackingScript"] = "Live Chat Script code from chat provider:",
                 ["Plugins.Widgets.BsLiveChat.TrackingScript.Hint"] = "Paste the tracking code generated from chat provider"
             });
-
             await base.InstallAsync();
         }
 
+        /// <summary>
+        /// Update plugin
+        /// </summary>
+        /// <param name="currentVersion">Current version of plugin</param>
+        /// <param name="targetVersion">New version of plugin</param>
+        /// <returns>A task that represents the asynchronous operation</returns>
         public override async Task UpdateAsync(string currentVersion, string targetVersion)
         {
             // Adding Meta Tags.
 
             var customHeadTags = _seoSettings.CustomHeadTags;
-            if (string.IsNullOrEmpty(customHeadTags) || !customHeadTags.Contains($"<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">"))
+            if (string.IsNullOrEmpty(customHeadTags) || !(customHeadTags.Contains($"<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">")))
             {
                 var finalCustomHeadTags = customHeadTags + $"<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">";
                 _seoSettings.CustomHeadTags = finalCustomHeadTags;
@@ -70,8 +87,13 @@ namespace Nop.Plugin.Widgets.BsLiveChat
             }
         }
 
+        /// <summary>
+        /// Uninstall plugin
+        /// </summary>
         public override async Task UninstallAsync()
         {
+            // Deleting Meta Tags
+
             //settings
             await _settingService.DeleteSettingAsync<BsLiveChatSettings>();
 
@@ -83,8 +105,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat
 
         public Type GetWidgetViewComponent(string widgetZone)
         {
-            if (widgetZone == null)
-                throw new ArgumentNullException(nameof(widgetZone));
+            ArgumentNullException.ThrowIfNull(widgetZone);
 
             return typeof(WidgetsBsLiveChatViewComponent);
         }
