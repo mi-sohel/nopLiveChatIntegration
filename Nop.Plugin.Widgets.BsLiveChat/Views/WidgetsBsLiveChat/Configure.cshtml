@@ -1,20 +1,15 @@
-﻿
-@model Nop.Plugin.Widgets.BsLiveChat.Models.ConfigurationModel
+﻿@model Nop.Plugin.Widgets.BsLiveChat.Models.ConfigurationModel
 @using Nop.Web.Framework;
 @{
     Layout = "_ConfigurePlugin";
 }
 
-@await Component.InvokeAsync("StoreScopeConfiguration")
-
-
+@await Component.InvokeAsync(typeof(StoreScopeConfigurationViewComponent))
 
 <form asp-controller="WidgetsBsLiveChat" asp-action="Configure" method="post">
     <div class="cards-group">
-         
         <div class="card card-default">
             <div class="card-body">
-                
                 <div class="form-group row">
                     <div class="col-md-4">
                         <nop-override-store-checkbox asp-for="TrackingScript_OverrideForStore" asp-input="TrackingScript" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
@@ -27,10 +22,10 @@
                 </div>
               
                 <div class="form-group row">
-                    <div class="col-md-9">
+                    <div class="col-md-4">
                         &nbsp;
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-8">
                         <input type="submit" name="save" class="btn btn-primary" value="@T("Admin.Common.Save")" />
                     </div>
                 </div>

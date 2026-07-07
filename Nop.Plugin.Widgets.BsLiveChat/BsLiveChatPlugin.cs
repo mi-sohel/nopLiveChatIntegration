@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nop.Core;
-using Nop.Core.Domain.Customers;
+﻿using Nop.Core;
 using Nop.Core.Domain.Seo;
 using Nop.Plugin.Widgets.BsLiveChat.Components;
 using Nop.Services.Cms;
@@ -13,31 +9,25 @@ using Nop.Web.Framework.Infrastructure;
 
 namespace Nop.Plugin.Widgets.BsLiveChat
 {
-    /// <summary>
-    /// Live person provider
-    /// </summary>
     public class BsLiveChatPlugin : BasePlugin, IWidgetPlugin
     {
         private readonly ISettingService _settingService;
         private readonly IWebHelper _webHelper;
         private readonly ILocalizationService _localizationService;
-        private readonly IStoreContext _storeContext;
         private readonly SeoSettings _seoSettings;
 
         public BsLiveChatPlugin(ISettingService settingService,
-            IWebHelper webHelper, 
+            IWebHelper webHelper,
             ILocalizationService localizationService,
             IStoreContext storeContext,
-            SeoSettings seoSettings
-            )
+            SeoSettings seoSettings)
         {
-            this._settingService = settingService;
+            _settingService = settingService;
             _webHelper = webHelper;
             _localizationService = localizationService;
-            _storeContext = storeContext;
             _seoSettings = seoSettings;
         }
-       
+
         /// <summary>
         /// Gets widget zones where this widget should be rendered
         /// </summary>
@@ -47,7 +37,6 @@ namespace Nop.Plugin.Widgets.BsLiveChat
         {
             return Task.FromResult<IList<string>>(new List<string> { PublicWidgetZones.BodyEndHtmlTagBefore });
         }
-         
 
         /// <summary>
         /// Gets a configuration page URL
@@ -57,29 +46,24 @@ namespace Nop.Plugin.Widgets.BsLiveChat
             return _webHelper.GetStoreLocation() + "Admin/WidgetsBsLiveChat/Configure";
         }
 
-        
-     
         /// <summary>
         /// Install plugin
         /// </summary>
         public override async Task InstallAsync()
         {
             // Adding Meta Tags.
-         
             var customHeadTags = _seoSettings.CustomHeadTags;
             var finalCustomHeadTags = customHeadTags + "<meta name=\"referrer\"content=\"no-referrer-when-downgrade\">";
             _seoSettings.CustomHeadTags = finalCustomHeadTags;
             await _settingService.SaveSettingAsync(_seoSettings, x => x.CustomHeadTags);
+
             await _settingService.ClearCacheAsync();
 
-           
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 ["Plugins.Widgets.BsLiveChat.TrackingScript"] = "Live Chat Script code from chat provider:",
                 ["Plugins.Widgets.BsLiveChat.TrackingScript.Hint"] = "Paste the tracking code generated from chat provider"
             });
-
-
             await base.InstallAsync();
         }
 
@@ -101,8 +85,8 @@ namespace Nop.Plugin.Widgets.BsLiveChat
                 await _settingService.SaveSettingAsync(_seoSettings, x => x.CustomHeadTags);
                 await _settingService.ClearCacheAsync();
             }
-
         }
+
         /// <summary>
         /// Uninstall plugin
         /// </summary>
@@ -110,9 +94,8 @@ namespace Nop.Plugin.Widgets.BsLiveChat
         {
             // Deleting Meta Tags
 
-            
             //settings
-           await _settingService.DeleteSettingAsync<BsLiveChatSettings>();
+            await _settingService.DeleteSettingAsync<BsLiveChatSettings>();
 
             //locales
 
@@ -122,8 +105,7 @@ namespace Nop.Plugin.Widgets.BsLiveChat
 
         public Type GetWidgetViewComponent(string widgetZone)
         {
-            if (widgetZone == null)
-                throw new ArgumentNullException(nameof(widgetZone));
+            ArgumentNullException.ThrowIfNull(widgetZone);
 
             return typeof(WidgetsBsLiveChatViewComponent);
         }
